@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body {
+      background-color: #1a1a1a;
+      color: #ffffff;
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      overflow: hidden;
+    }
+
+    header {
+      background-color: #333333;
+      padding: 10px;
+      text-align: center;
+      width: 100%;
+    }
+
+    .content {
+      width: 80%;
+      margin-top: 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    input, button {
+      margin-bottom: 10px;
+      padding: 5px;
+    }
+
+    button {
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #45a049;
+    }
+
+    .project-list {
+      list-style-type: none;
+      padding: 0;
+      margin: 0;
+      text-align: left;
+      width: 100%;
+    }
+
+    .project {
+      background-color: #333333;
+      margin: 5px 0;
+      padding: 10px;
+      border-radius: 5px;
+    }
+
+    a {
+      color: #ffffff;
+      text-decoration: none;
+    }
+
+    a:hover {
+      text-decoration: underline;
+    }
+
+    .info {
+      color: gray;
+    }
+
+    .r {
+      color: red;
+    }
+  </style>
+  <title>RecoilStore</title>
+</head>
+<body>
+  <header>
+    <h1>RecoilStore</h1>
+    <p class="info">
+      Publique seus jogos APK e PPT, criado por recoil777 e pom femboy
+    </p>
+    
+
+  </header>
+
+  <div class="content">
+    <input type="text" id="gameName" placeholder="Nome do Jogo:" maxlength="30" required autocomplete="off" />
+    <input type="text" id="gameLink" placeholder="Link de Download:" required autocomplete="off" />
+    <button onclick="publishGame()">Enviar Jogo</button>
+  
+
+    <h3>Jogos publicados:</h3>
+    <a class="r" href="report.html">Denunciar jogo</a>
+    
+    <ul id="projectList"></ul>
+  </div>
+
+<script src="https://www.gstatic.com/firebasejs/7.24.0/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/7.24.0/firebase-database.js"></script>
+
+<script>
+  var firebaseConfig = {
+    apiKey: "AIzaSyBh-jHFMDDxSs8pJVV8_WgU7WHVBfp4I7A",
+    authDomain: "recoil-d2200.firebaseapp.com",
+    databaseURL: "https://recoil-d2200-default-rtdb.firebaseio.com",
+    projectId: "recoil-d2200",
+    storageBucket: "recoil-d2200.appspot.com",
+    messagingSenderId: "264326650349",
+    appId: "1:264326650349:web:6e168bc9583570dad12fe4",
+    measurementId: "G-1BXRC94XMM"
+  };
+
+  firebase.initializeApp(firebaseConfig);
+  var database = firebase.database();
+
+  function publishGame() {
+    var name = document.getElementById('gameName').value;
+    var link = document.getElementById('gameLink').value;
+
+    if (name && link) {
+      var gamesRef = database.ref('games');
+      var newGameRef = gamesRef.push();
+
+      newGameRef.set({
+        name: name,
+        link: link
+      }, function(error) {
+        if (error) {
+          console.error("Erro ao enviar o jogo:", error);
+        } else {
+          console.log("Jogo enviado com sucesso!");
+          // Limpar os campos após a publicação
+          document.getElementById('gameName').value = '';
+          document.getElementById('gameLink').value = '';
+        }
+      });
+    }
+  }
+
+  function fetchProjects() {
+    var gamesRef = database.ref('games');
+    gamesRef.on('value', function(snapshot) {
+      var projectList = document.getElementById('projectList');
+      projectList.innerHTML = '';
+
+      snapshot.forEach(function(childSnapshot) {
+        var childData = childSnapshot.val();
+        var listItem = document.createElement('li');
+        listItem.className = 'project';
+        listItem.innerHTML = '<a href="' + childData.link + '" target="_blank">' + childData.name + '</a>';
+        projectList.appendChild(listItem);
+      });
+    });
+  }
+
+  fetchProjects();
+</script>
+</body>
+</html>

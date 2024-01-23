@@ -68,6 +68,11 @@ Please refer to the full Apache License, Version 2.0 for the complete set of ter
       border-radius: 5px;
     }
 
+    textarea {
+        border: none;
+        border-radius: 5px;
+    }
+
     button {
       background-color: #4CAF50;
       color: white;
@@ -84,8 +89,6 @@ Please refer to the full Apache License, Version 2.0 for the complete set of ter
       padding: 5px;
       max-width: 100%;
       resize: vertical;
-      border: none;
-      border-radius: 5px;
     }
 
     ul {
@@ -123,23 +126,23 @@ Please refer to the full Apache License, Version 2.0 for the complete set of ter
       border-radius: 5px;
     }
   </style>
-  <title>RecoilStore - Denunciar Jogo</title>
+  <title>RecoilStore - Chat</title>
 </head>
 <body>
   <header>
-    <h1>RecoilStore - Denunciar Jogo</h1>
-    <p class="warn">Não faça denúncias falsas por favor!</p> <br>
-    <a class="header" href="chat.html">Chat</a>
+    <h1>RecoilStore - Chat</h1>
+    <p class="warn">Não faça spam!</p><br>
+    <a class="header" href="home.html">Home</a>
     <a class="header" href="mailto:ch.carlosh.enr.ique2.112@gmail.com">Contato</a>
     <a class="header" href="https://github.com/pompomdev/pompomdev/blob/main/LICENSE">Licença</a>
-</header>
+  </header>
 
   <section>
-    <input type="text" id="reportedGameName" placeholder="Nome do Jogo:" required autocomplete="off" />
-    <textarea id="reportReason" placeholder="Motivo da Denúncia:" style="resize: none;" maxlength="35" required autocomplete="off"></textarea>
-    <button onclick="reportGame()">Denunciar Jogo</button>
+    <input type="text" id="nickname" placeholder="Nickname:" required autocomplete="off" />
+    <textarea id="message" placeholder="Digite sua mensagem..." style="resize: none;" required></textarea>
+    <button onclick="sendMessage()">Enviar</button>
 
-    <ul id="reportList"></ul>
+    <ul id="messageList"></ul>
   </section>
 
   <script src="https://www.gstatic.com/firebasejs/7.24.0/firebase-app.js"></script>
@@ -160,29 +163,44 @@ Please refer to the full Apache License, Version 2.0 for the complete set of ter
     firebase.initializeApp(firebaseConfig);
     var database = firebase.database();
 
-    function reportGame() {
-      var name = document.getElementById('reportedGameName').value;
-      var reason = document.getElementById('reportReason').value;
+    var messageList = document.getElementById('messageList');
 
-      if (name && reason) {
-        var reportsRef = database.ref('reports');
-        var newReportRef = reportsRef.push();
+    function sendMessage() {
+      var nickname = document.getElementById('nickname').value;
+      var message = document.getElementById('message').value;
 
-        newReportRef.set({
-          name: name,
-          reason: reason
+      if (nickname && message) {
+        var messagesRef = database.ref('messages');
+        var newMessageRef = messagesRef.push();
+
+        newMessageRef.set({
+          nickname: nickname,
+          message: message
         }, function(error) {
           if (error) {
-            console.error("Erro ao enviar a denúncia:", error);
+            console.error("Erro ao enviar a mensagem:", error);
           } else {
-            console.log("Denúncia enviada com sucesso!");
-            // Limpar os campos apÃ³s a denÃºncia
-            document.getElementById('reportedGameName').value = '';
-            document.getElementById('reportReason').value = '';
+            console.log("Mensagem enviada com sucesso!");
+            // Limpar os campos após o envio da mensagem
+            document.getElementById('nickname').value = '';
+            document.getElementById('message').value = '';
           }
         });
       }
     }
+
+    function showMessage(snapshot) {
+      var nickname = snapshot.val().nickname;
+      var message = snapshot.val().message;
+
+      var li = document.createElement('li');
+      li.innerHTML = '<strong>' + nickname + ':</strong> ' + message;
+
+      messageList.prepend(li);
+    }
+
+    var messagesRef = database.ref('messages');
+    messagesRef.on('child_added', showMessage);
   </script>
 </body>
 </html>

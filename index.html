@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<!-- 
+Copyright 2024 Carlos Henrique <ch.carlosh.enr.ique2.112@gmail.com>
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+
+Additional Rules:
+
+1. You must retain the original copyright notice and license information when distributing the software or any modifications created from it.
+2. This software is provided "as is," without any warranties or conditions of any kind, either express or implied, including but not limited to the implied warranties or conditions of merchantability, fitness for a particular purpose, or non-infringement.
+3. In no event shall the authors or copyright holders be held liable for any claims, damages, or other liabilities arising out of the use or inability to use the software.
+4. You are not allowed to use the name of the copyright holder for any endorsement or promotional purposes without prior written permission.
+5. Contributions to the software are welcome, but by submitting a contribution, you agree to license the contribution under the same license terms as the original software.
+
+Please refer to the full Apache License, Version 2.0 for the complete set of terms and conditions.
+-->
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body {
+      background-color: #1a1a1a;
+      color: #ffffff;
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      overflow: hidden;
+    }
+
+    header {
+      background-color: #333333;
+      padding: 10px;
+      text-align: center;
+      width: 100%;
+    }
+
+    .content {
+      width: 80%;
+      margin-top: 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    input,
+    button {
+      margin-bottom: 10px;
+      padding: 5px;
+    }
+
+    button {
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #45a049;
+    }
+
+    .project-list {
+      list-style-type: none;
+      padding: 0;
+      margin: 0;
+      text-align: left;
+      width: 100%;
+    }
+
+    .project {
+      background-color: #333333;
+      margin: 5px 0;
+      padding: 10px;
+      border-radius: 5px;
+    }
+
+    a {
+      color: #ffffff;
+      text-decoration: none;
+    }
+
+    a:hover {
+      text-decoration: underline;
+    }
+
+    .info {
+      color: gray;
+    }
+
+    .report {
+      color: red;
+    }
+
+    .header {
+      background-color: #444;
+      padding: 7px;
+      border: none;
+      border-radius: 5px;
+    }
+
+    .overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.5);
+      z-index: 9999;
+      display: none;
+    }
+
+    .popup {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background-color: #333333;
+      border-radius: 10px;
+      padding: 20px;
+      z-index: 10000;
+      display: none;
+      -webkit-animation: fadeIn 0.3s ease-out;
+      animation: fadeIn 0.3s ease-out;
+    }
+
+    @-webkit-keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translate(-50%, -50%) scale(0.8);
+      }
+
+      to {
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(1);
+      }
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translate(-50%, -50%) scale(0.8);
+      }
+
+      to {
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(1);
+      }
+    }
+
+    .popup .close {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      color: #ffffff;
+      cursor: pointer;
+    }
+  </style>
+  <title>RecoilStore</title>
+</head>
+
+<body>
+  <header>
+    <h1>RecoilStore</h1>
+    <p class="info">
+      Publique seus jogos APK e PPT, criado por recoil777 e pompomdev
+    </p><br>
+    <a class="header" href="chat.html">Chat</a>
+    <a class="header" href="mailto:ch.carlosh.enr.ique2.112@gmail.com">Contato</a>
+    <a class="header" href="https://github.com/pompomdev/pompomdev/blob/main/LICENSE">Licença</a>
+  </header>
+
+  <div class="content">
+    <button onclick="openPopup()">Enviar Jogo</button>
+
+    <div class="overlay"></div>
+
+    <div id="popup" class="popup">
+      <span class="close" onclick="closePopup()">⊘</span>
+      <input type="text" id="gameName" placeholder="Nome do Jogo" maxlength="30" required autocomplete="off" /><br>
+      <input type="text" id="gameLink" placeholder="Link de Download" required autocomplete="off" /><br>
+      <input type="text" id="gameVersion" placeholder="Versão do Jogo" maxlength="20" required autocomplete="off" /><br>
+      <button onclick="publishGame()">Enviar</button>
+    </div>
+
+    <h3>Jogos Publicados:</h3>
+    <a class="report" href="report.html">Denunciar jogo</a>
+    <ul id="projectList" class="project-list"></ul>
+  </div>
+
+  <script src="https://www.gstatic.com/firebasejs/7.24.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/7.24.0/firebase-database.js"></script>
+
+  <script>
+    var firebaseConfig = {
+      apiKey: "AIzaSyBh-jHFMDDxSs8pJVV8_WgU7WHVBfp4I7A",
+      authDomain: "recoil-d2200.firebaseapp.com",
+      databaseURL: "https://recoil-d2200-default-rtdb.firebaseio.com",
+      projectId: "recoil-d2200",
+      storageBucket: "recoil-d2200.appspot.com",
+      messagingSenderId: "264326650349",
+      appId: "1:264326650349:web:6e168bc9583570dad12fe4",
+      measurementId: "G-1BXRC94XMM"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    var database = firebase.database();
+
+    function openPopup() {
+      var popup = document.getElementById('popup');
+      var overlay = document.querySelector('.overlay');
+
+      popup.style.display = 'block';
+      overlay.style.display = 'block';
+    }
+
+    function closePopup() {
+      var popup = document.getElementById('popup');
+      var overlay = document.querySelector('.overlay');
+
+      popup.style.display = 'none';
+      overlay.style.display = 'none';
+    }
+
+    function publishGame() {
+      var name = document.getElementById('gameName').value;
+      var link = document.getElementById('gameLink').value;
+      var version = document.getElementById('gameVersion').value;
+
+      if (name && link && version) {
+        var gamesRef = database.ref('games');
+        var newGameRef = gamesRef.push();
+
+        newGameRef.set({
+          name: name,
+          link: link,
+          version: version
+        }, function (error) {
+          if (error) {
+            console.error("Erro ao enviar o jogo:", error);
+          } else {
+            console.log("Jogo enviado com sucesso!");
+            closePopup();
+            // Limpar os campos após a publicação
+            document.getElementById('gameName').value = '';
+            document.getElementById('gameLink').value = '';
+            document.getElementById('gameVersion').value = '';
+          }
+        });
+      }
+    }
+
+function fetchProjects() {
+  var gamesRef = database.ref('games');
+  gamesRef.on('value', function (snapshot) {
+    var projectList = document.getElementById('projectList');
+    projectList.innerHTML = '';
+
+    snapshot.forEach(function (childSnapshot) {
+      var childData = childSnapshot.val();
+      var listItem = document.createElement('li');
+      listItem.className = 'project';
+      var link = document.createElement('a');
+      var gameName = document.createElement('span'); // elemento span para o nome do jogo
+      gameName.innerText = childData.name;
+      link.href = childData.link;
+      link.target = "_blank";
+      link.innerHTML = gameName.innerHTML + "<br><strong>Versão:</strong> " + childData.version; // inserir nome em span e versão em negrito
+      listItem.appendChild(link);
+      projectList.appendChild(listItem);
+    });
+  });
+}
+
+fetchProjects();
+  </script>
+</body>
+
+</html>
